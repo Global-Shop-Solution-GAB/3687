@@ -1,0 +1,43 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Execute from hook 16920
+
+V.Local.sRet.Declare(String)
+V.Local.sQuery.Declare(String)
+V.Local.sColW.Declare(String)
+V.Local.sCol.Declare(String)
+
+V.Local.bRet.Declare(Boolean)
+
+F.Global.Security.IsInGroup(V.Caller.User,"APALL",V.Caller.CompanyCode,V.Local.bRet)
+F.Intrinsic.Control.If(V.Local.bRet,=,True)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+F.Intrinsic.Debug.Stop
+F.Intrinsic.String.Split("ID*!*Name*!*City*!*State*!*Zip","*!*",V.Local.sCol)
+F.Intrinsic.String.split("1000*!*3000*!*1000*!*1000*!*1000","*!*",V.Local.sColW)
+F.Intrinsic.UI.Browser("Select a Vendor","con","select VENDOR, NAME_VENDOR, CITY, STATE, CODE_ZIP FROM VENDOR_MASTER WHERE REC=1 and  VENDOR NOT IN(SELECT VENDOR FROM ATG_3687_Vndr_Rstrct WHERE RESTRICT_FLAG = 1)",V.Local.sCol,V.Local.sColW,V.Local.sret)
+
+F.Intrinsic.Control.If(V.Local.sret,<>,"***CANCEL***")
+	F.Intrinsic.String.Split(V.Local.sret,"*!*",V.Local.sret)
+	V.Passed.009001.Set(V.Local.sRet(0))
+	V.Passed.009002.Set(1)
+
+F.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$atg_vendor_browser$}$RLK$}$4/5/2016
+${$1$}$$}$$}$0$}$16920$}$BRWRC040-BROWSE-HOOK (VENDORS)$}$4/5/2016 8:59:44 AM$}$(Program: BRWRC040; Screen: BRWRC040)
+
+Program.Sub.Comments.End
+
