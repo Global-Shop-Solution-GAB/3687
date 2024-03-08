@@ -1,0 +1,152 @@
+Program.Sub.ScreenSU.Start
+gui.F_Main..create
+gui.F_Main..caption("Vendor Restrict")
+gui.F_Main..size(4035,2535)
+gui.F_Main..position(0,0)
+gui.F_Main..event(unload,exit)
+gui.F_Main..alwaysontop(False)
+gui.F_Main..fontname("Arial")
+gui.F_Main..fontsize(8)
+gui.F_Main..forecolor(0)
+gui.F_Main..fontstyle(False,False,False,False,False)
+gui.F_Main..BackColor(-2147483633)
+gui.F_Main..controlbox(True)
+gui.F_Main..maxbutton(False)
+gui.F_Main..minbutton(True)
+gui.F_Main..mousepointer(0)
+gui.F_Main..moveable(True)
+gui.F_Main..sizeable(False)
+gui.F_Main..ShowInTaskBar(True)
+gui.F_Main..titlebar(True)
+gui.F_Main.frmControls.create(frame)
+gui.F_Main.frmControls.caption("")
+gui.F_Main.frmControls.size(4500,435)
+gui.F_Main.frmControls.position(100,1200)
+gui.F_Main.frmControls.visible(True)
+gui.F_Main.frmControls.borderstyle(0)
+gui.F_Main.frmControls.fontname("Arial")
+gui.F_Main.frmControls.fontsize(8)
+gui.F_Main.cmdSave.create(button)
+gui.F_Main.cmdSave.caption("Save")
+gui.F_Main.cmdSave.visible(True)
+gui.F_Main.cmdSave.size(855,375)
+gui.F_Main.cmdSave.zorder(0)
+gui.F_Main.cmdSave.position(0,0)
+gui.F_Main.cmdSave.enabled(true)
+gui.F_Main.cmdSave.parent("frmcontrols")
+gui.F_Main.cmdSave.fontname("Arial")
+gui.F_Main.cmdSave.fontsize(8)
+gui.F_Main.cmdSave.event(click,cmdsave_click)
+gui.F_Main.cmdClear.create(button)
+gui.F_Main.cmdClear.caption("Clear")
+gui.F_Main.cmdClear.visible(True)
+gui.F_Main.cmdClear.size(855,375)
+gui.F_Main.cmdClear.zorder(0)
+gui.F_Main.cmdClear.position(975,0)
+gui.F_Main.cmdClear.enabled(True)
+gui.F_Main.cmdClear.parent("frmcontrols")
+gui.F_Main.cmdClear.fontname("Arial")
+gui.F_Main.cmdClear.fontsize(8)
+gui.F_Main.cmdClear.event(click,cmdClear_click)
+gui.F_Main.lbl1.create(label,"Vendor",True,2490,255,1,100,100,True,0,Arial,8,-2147483633,0)
+gui.F_Main.txtVENDOR.create(textbox,"",True,2550,315,0,100,400,True,0,Arial,8,-2147483643,1)
+gui.F_Main.cmdVENDOR.create(button)
+gui.F_Main.cmdVENDOR.caption("")
+gui.F_Main.cmdVENDOR.visible(True)
+gui.F_Main.cmdVENDOR.size(315,315)
+gui.F_Main.cmdVENDOR.zorder(0)
+gui.F_Main.cmdVENDOR.position(2700,380)
+gui.F_Main.cmdVENDOR.enabled(True)
+gui.F_Main.cmdVENDOR.fontname("Arial")
+gui.F_Main.cmdVENDOR.fontsize(8)
+gui.F_Main.cmdVENDOR.event(click,cmdVENDOR_click)
+gui.F_Main.cmdVENDOR.BackColor(-2147483643)
+gui.F_Main.chkRestrict.create(checkbox)
+gui.F_Main.chkRestrict.caption("Restrict From Browsers")
+gui.F_Main.chkRestrict.visible(True)
+gui.F_Main.chkRestrict.size(2970,255)
+gui.F_Main.chkRestrict.zorder(0)
+gui.F_Main.chkRestrict.position(100,800)
+gui.F_Main.chkRestrict.enabled(True)
+gui.F_Main.chkRestrict.alignment(0)
+gui.F_Main.chkRestrict.fontname("Arial")
+gui.F_Main.chkRestrict.fontsize(8)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.sub.Main.start
+
+F.ODBC.Connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+Gui.F_main..show
+
+Program.sub.main.end
+
+program.sub.cmdVENDOR_click.start
+V.Local.sColW.Declare(String)
+V.Local.sCol.Declare(String)
+V.Local.sret.Declare(String)
+V.Local.squery.Declare(String)
+F.Intrinsic.String.Split("ID*!*Name","*!*",V.Local.sCol)
+F.Intrinsic.String.split("1000*!*3000","*!*",V.Local.sColW)
+F.Intrinsic.Control.CallSub(Cmdclear_click)
+
+F.Intrinsic.UI.Browser("Select a Vendor","con","select VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER",V.Local.sCol,V.Local.sColW,6000,6000,V.Local.sret)
+F.Intrinsic.Control.If(V.Local.sret,<>,"***CANCEL***")
+	F.Intrinsic.String.Split(V.Local.sret,"*!*",V.Local.sret)
+
+	F.Intrinsic.string.Concat("SELECT RESTRICT_FLAG FROM ATG_3687_Vndr_Rstrct WHERE VENDOR = '",V.Local.sret(0),"'",V.Local.squery)
+	F.odbc.Connection!con.OpenRecordsetRO("rst",V.local.squery)
+	F.Intrinsic.Control.If(V.odbc.con!rst.EOF,=,False)
+		F.Intrinsic.Control.If(V.ODBC.con!rst.FieldVal!RESTRICT_FLAG,=,True)
+			Gui.F_Main.chkRestrict.Value(1)
+		F.Intrinsic.Control.Else
+			Gui.f_main.chkRestrict.value(0)
+		F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.EndIf
+	Gui.F_Main.txtVENDOR.Text(V.Local.sret(0))
+	F.ODBC.con!rst.Close
+
+F.Intrinsic.Control.EndIf
+
+program.sub.cmdVENDOR_click.end
+
+program.sub.cmdSave_click.start
+V.Local.sQuery.Declare(String)
+F.Intrinsic.String.Concat("SELECT * FROM ATG_3687_Vndr_Rstrct WHERE VENDOR= '",V.screen.f_main!txtVENDOR.text,"' ",V.Local.squery)
+F.ODBC.Connection!con.OpenRecordsetRW("rst",V.Local.sQuery)
+F.Intrinsic.Control.If(V.Odbc.con!rst.EOf,=,True)
+	F.ODBC.con!rst.AddNew
+	F.ODBC.con!rst.Set!VENDOR(V.Screen.F_Main!txtVENDOR.text)
+
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.If(V.Screen.F_Main!chkRestrict.Value,=,1)
+	F.ODBC.con!rst.Set!RESTRICT_FLAG(True)
+F.Intrinsic.Control.Else
+	F.ODBC.con!rst.Set!RESTRICT_FLAG(False)
+
+F.Intrinsic.Control.EndIf
+
+F.ODBC.con!rst.Update
+F.ODBC.con!rst.Close
+
+program.sub.cmdSave_click.end
+
+program.sub.cmdClear_click.start
+Gui.f_main.txtVENDOR.text("")
+Gui.f_main.chkRESTRICT.value(0)
+
+program.sub.cmdClear_click.end
+
+Program.sub.exit.start
+F.ODBC.Connection!con.close
+F.intrinsic.control.end
+
+Program.sub.exit.end
+
+
